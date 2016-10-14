@@ -388,4 +388,110 @@ public class GenericsTest extends JPAPersistenceTestCase
             clean(Manager.class);
         }
     }
+
+    public void testIn()
+    {
+        try
+        {
+            EntityManager em = getEM();
+            EntityTransaction tx = em.getTransaction();
+            try
+            {
+                tx.begin();
+
+                EnumHolder eh1 = new EnumHolder();
+                eh1.setId(1L);
+                eh1.setColour1(Colour.GREEN);
+                eh1.setColour2(Colour.GREEN);
+                em.persist(eh1);
+
+                EnumHolder eh2 = new EnumHolder();
+                eh1.setId(2L);
+                eh2.setColour1(Colour.RED);
+                eh2.setColour2(Colour.RED);
+                em.persist(eh2);
+
+                EnumHolder eh3 = new EnumHolder();
+                eh3.setId(3L);
+                eh3.setColour1(Colour.BLUE);
+                eh3.setColour2(Colour.BLUE);
+                em.persist(eh3);
+
+                tx.commit();
+            }
+            finally
+            {
+                if (tx.isActive())
+                {
+                    tx.rollback();
+                }
+                em.close();
+            }
+
+            em = getEM();
+            tx = em.getTransaction();
+            try
+            {
+                tx.begin();
+                // Query using enum
+                Query q;
+                List<EnumHolder> eh;
+                List<Colour> colors = new LinkedList<>();
+                colors.add(Colour.GREEN);
+                colors.add(Colour.RED);
+
+                //EnumType.ORDINAL
+                q = em.createQuery("select eh from EnumHolder eh where eh.colour1 in :colors");
+                q.setParameter("colors", colors);
+                eh = q.getResultList();
+                assertEquals(2, eh.size());
+
+                q = em.createQuery("select eh from EnumHolder eh where eh.colour1 not in :colors");
+                q.setParameter("colors", colors);
+                eh = q.getResultList();
+                assertEquals(1, eh.size());
+
+                q = em.createQuery("select eh from EnumHolder eh where eh.colour1 in (org.datanucleus.samples.enums.Colour.GREEN, org.datanucleus.samples.enums.Colour.RED)");
+                eh = q.getResultList();
+                assertEquals(2, eh.size());
+
+                q = em.createQuery("select eh from EnumHolder eh where eh.colour1 not in (org.datanucleus.samples.enums.Colour.GREEN, org.datanucleus.samples.enums.Colour.RED)");
+                eh = q.getResultList();
+                assertEquals(1, eh.size());
+
+                //EnumType.STRING
+                q = em.createQuery("select eh from EnumHolder eh where eh.colour2 in :colors");
+                q.setParameter("colors", colors);
+                eh = q.getResultList();
+                assertEquals(2, eh.size());
+
+                q = em.createQuery("select eh from EnumHolder eh where eh.colour2 not in :colors");
+                q.setParameter("colors", colors);
+                eh = q.getResultList();
+                assertEquals(1, eh.size());
+
+                q = em.createQuery("select eh from EnumHolder eh where eh.colour2 in (org.datanucleus.samples.enums.Colour.GREEN, org.datanucleus.samples.enums.Colour.RED)");
+                eh = q.getResultList();
+                assertEquals(2, eh.size());
+
+                q = em.createQuery("select eh from EnumHolder eh where eh.colour2 not in (org.datanucleus.samples.enums.Colour.GREEN, org.datanucleus.samples.enums.Colour.RED)");
+                eh = q.getResultList();
+                assertEquals(1, eh.size());
+
+                tx.commit();
+            }
+            finally
+            {
+                if (tx.isActive())
+                {
+                    tx.rollback();
+                }
+                em.close();
+            }
+        }
+        finally
+        {
+            clean(EnumHolder.class);
+        }
+    }
 }
