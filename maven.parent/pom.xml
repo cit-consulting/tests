@@ -14,12 +14,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipCoverage>true</skipCoverage>
 
-        <core.min.version>5.0.3</core.min.version>
+        <core.min.version>5.0.4-SNAPSHOT</core.min.version>
         <api.jdo.min.version>5.0.3</api.jdo.min.version>
-        <api.jpa.min.version>5.0.3</api.jpa.min.version>
+        <api.jpa.min.version>5.0.4-SNAPSHOT</api.jpa.min.version>
         <api.rest.min.version>5.0.2</api.rest.min.version>
 
-        <rdbms.min.version>5.0.3</rdbms.min.version>
+        <rdbms.min.version>5.0.4-SNAPSHOT</rdbms.min.version>
         <cassandra.min.version>5.0.2</cassandra.min.version>
         <mongodb.min.version>5.0.2</mongodb.min.version>
         <hbase.min.version>5.0.2</hbase.min.version>
