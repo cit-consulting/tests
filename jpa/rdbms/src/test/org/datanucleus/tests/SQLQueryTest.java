@@ -17,6 +17,7 @@ Contributors:
 **********************************************************************/
 package org.datanucleus.tests;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,12 +25,15 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
+import org.datanucleus.samples.annotations.inheritance.InheritC;
+import org.datanucleus.samples.annotations.inheritance.InheritC1;
+import org.datanucleus.samples.annotations.inheritance.InheritC2;
+import org.datanucleus.samples.annotations.inheritance.InheritC3;
 import org.datanucleus.samples.annotations.models.company.Employee;
 import org.datanucleus.samples.annotations.models.company.Person;
 import org.datanucleus.samples.annotations.one_one.unidir.Login;
 import org.datanucleus.samples.annotations.one_one.unidir.LoginAccount;
 import org.datanucleus.samples.annotations.one_one.unidir.LoginAccountComplete;
-import org.datanucleus.tests.JPAPersistenceTestCase;
 
 /**
  * Tests for SQL queries via JPA.
@@ -509,6 +513,100 @@ public class SQLQueryTest extends JPAPersistenceTestCase
         {
             clean(LoginAccount.class);
             clean(Login.class);
+        }
+    }
+
+    public void testType()
+    {
+        addClassesToSchema(new Class[] {InheritC.class, InheritC1.class, InheritC2.class, InheritC3.class});
+        try
+        {
+            EntityManager em = getEM();
+            EntityTransaction tx = em.getTransaction();
+            try
+            {
+                tx.begin();
+
+                InheritC2 i1 = new InheritC2();
+                i1.setId(1L);
+                em.persist(i1);
+
+                InheritC2 i2 = new InheritC2();
+                i2.setId(2L);
+                em.persist(i2);
+
+                InheritC1 i3 = new InheritC1();
+                i3.setId(3L);
+                em.persist(i3);
+
+                InheritC1 i4 = new InheritC1();
+                i4.setId(4L);
+                em.persist(i4);
+
+                InheritC3 i5 = new InheritC3();
+                i5.setId(5L);
+                em.persist(i5);
+
+                InheritC3 i6 = new InheritC3();
+                i6.setId(6L);
+                em.persist(i6);
+
+                tx.commit();
+            }
+            finally
+            {
+                if (tx.isActive())
+                {
+                    tx.rollback();
+                }
+                em.close();
+            }
+
+            em = getEM();
+            tx = em.getTransaction();
+            try
+            {
+                tx.begin();
+                Query q;
+                List<InheritC> inheritCs;
+
+                q = em.createQuery("select i from InheritC i where TYPE(i) in :types");
+                q.setParameter("types", Arrays.asList(InheritC1.class));
+                inheritCs = q.getResultList();
+                assertEquals(2, inheritCs.size());
+
+                q = em.createQuery("select i from InheritC i where TYPE(i) not in :types");
+                q.setParameter("types", Arrays.asList(InheritC1.class));
+                inheritCs = q.getResultList();
+                assertEquals(4, inheritCs.size());
+
+                q = em.createQuery("select i from InheritC i where TYPE(i) in :types");
+                q.setParameter("types", Arrays.asList(InheritC2.class, InheritC1.class));
+                inheritCs = q.getResultList();
+                assertEquals(4, inheritCs.size());
+
+                q = em.createQuery("select i from InheritC i where TYPE(i) not in :types");
+                q.setParameter("types", Arrays.asList(InheritC2.class, InheritC1.class));
+                inheritCs = q.getResultList();
+                assertEquals(2, inheritCs.size());
+                assertEquals(InheritC3.class, inheritCs.get(0).getClass());
+                tx.commit();
+            }
+            finally
+            {
+                if (tx.isActive())
+                {
+                    tx.rollback();
+                }
+                em.close();
+            }
+        }
+        finally
+        {
+            clean(InheritC1.class);
+            clean(InheritC2.class);
+            clean(InheritC3.class);
+            clean(InheritC.class);
         }
     }
 }

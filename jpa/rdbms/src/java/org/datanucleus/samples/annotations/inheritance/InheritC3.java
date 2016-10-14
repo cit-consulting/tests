@@ -18,25 +18,12 @@ Contributors:
 package org.datanucleus.samples.annotations.inheritance;
 
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.Table;
 
 /**
- * Base of an inheritance tree using "single-table" inheritance strategy.
+ * Subclass in hierarchy using single-table inheritance strategy.
  */
 @Entity
-@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
-@Table(name="JPA_INHERIT_C")
-public class InheritC
+public class InheritC3 extends InheritC
 {
-    @Id
-    long id;
-
-    String name;
-
-    public void setId(long id) {
-        this.id = id;
-    }
+    String name3;
 }

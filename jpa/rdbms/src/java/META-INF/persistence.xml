@@ -16,6 +16,7 @@
         <class>org.datanucleus.samples.annotations.inheritance.InheritC</class>
         <class>org.datanucleus.samples.annotations.inheritance.InheritC1</class>
         <class>org.datanucleus.samples.annotations.inheritance.InheritC2</class>
+        <class>org.datanucleus.samples.annotations.inheritance.InheritC3</class>
         <class>org.datanucleus.samples.annotations.models.company.Account</class>
         <class>org.datanucleus.samples.annotations.models.company.Person</class>
         <class>org.datanucleus.samples.annotations.models.company.Employee</class>

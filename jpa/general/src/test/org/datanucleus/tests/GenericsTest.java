@@ -17,20 +17,20 @@ Contributors:
 **********************************************************************/
 package org.datanucleus.tests;
 
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
-import org.datanucleus.samples.annotations.generics.GenericEnumType;
-import org.datanucleus.samples.annotations.generics.GenericIdPropSub1;
-import org.datanucleus.samples.annotations.generics.GenericIdPropSub2Sub;
-import org.datanucleus.samples.annotations.generics.GenericOneOneRelated1;
-import org.datanucleus.samples.annotations.generics.GenericOneOneRelated2;
-import org.datanucleus.samples.annotations.generics.GenericOneOneSub1;
-import org.datanucleus.samples.annotations.generics.GenericOneOneSub2;
-import org.datanucleus.tests.JPAPersistenceTestCase;
+import org.datanucleus.samples.annotations.models.company.Employee;
+import org.datanucleus.samples.annotations.models.company.Manager;
+import org.datanucleus.samples.annotations.models.company.Person;
+import org.datanucleus.samples.annotations.generics.*;
+import org.datanucleus.samples.annotations.types.enums.EnumHolder;
+import org.datanucleus.samples.enums.Colour;
 
 /**
  * Testcases for use of generics, and in particular TypeVariable usage.
@@ -297,6 +297,95 @@ public class GenericsTest extends JPAPersistenceTestCase
         {
             clean(GenericIdPropSub1.class);
             clean(GenericIdPropSub2Sub.class);
+        }
+    }
+
+    public void testType()
+    {
+        try
+        {
+            EntityManager em = getEM();
+            EntityTransaction tx = em.getTransaction();
+            try
+            {
+                tx.begin();
+
+                Manager m1 = new Manager(1L,"Dima","Rudenko", "manager1@mail.com", 12345,"RR112");
+                em.persist(m1);
+
+                Manager m2 = new Manager(2L,"Petr","Romanov", "managet2@mail.com", 654321,"PI");
+                em.persist(m2);
+
+                Employee e1 = new Employee(3L,"Dima","Rudenk", "employee1@mail.com", 123456,"RR1122");
+                em.persist(e1);
+
+                Employee e2 = new Employee(4L,"Petr","Romano", "employee2@mail.com", 65432,"PII");
+                em.persist(e2);
+
+                tx.commit();
+            }
+            finally
+            {
+                if (tx.isActive())
+                {
+                    tx.rollback();
+                }
+                em.close();
+            }
+
+            em = getEM();
+            tx = em.getTransaction();
+            try
+            {
+                tx.begin();
+                Query q;
+                List<Person> persons;
+
+                q = em.createQuery("select p from Person_Ann p where TYPE(p) in :typesPerson");
+                q.setParameter("typesPerson", Arrays.asList(Manager.class, Employee.class));
+                persons = q.getResultList();
+                assertEquals(4, persons.size());
+
+                q = em.createQuery("select p from Person_Ann p where TYPE(p) in :typesPerson");
+                q.setParameter("typesPerson", Arrays.asList(Manager.class));
+                persons = q.getResultList();
+                assertEquals(2, persons.size());
+
+                q = em.createQuery("select p from Person_Ann p where TYPE(p) in :typesPerson");
+                q.setParameter("typesPerson", Arrays.asList(Employee.class));
+                persons = q.getResultList();
+                assertEquals(4, persons.size());
+
+                q = em.createQuery("select p from Person_Ann p where TYPE(p) not in :typesPerson");
+                q.setParameter("typesPerson", Arrays.asList(Manager.class, Person.class));
+                persons = q.getResultList();
+                assertEquals(0, persons.size());
+
+                q = em.createQuery("select p from Person_Ann p where TYPE(p) not in :typesPerson");
+                q.setParameter("typesPerson", Arrays.asList(Manager.class));
+                persons = q.getResultList();
+                assertEquals(2, persons.size());
+
+                q = em.createQuery("select p from Person_Ann p where TYPE(p) not in :typesPerson");
+                q.setParameter("typesPerson", Arrays.asList(Employee.class));
+                persons = q.getResultList();
+                assertEquals(0, persons.size());
+                tx.commit();
+            }
+            finally
+            {
+                if (tx.isActive())
+                {
+                    tx.rollback();
+                }
+                em.close();
+            }
+        }
+        finally
+        {
+            clean(Employee.class);
+            clean(Person.class);
+            clean(Manager.class);
         }
     }
 }
